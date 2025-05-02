@@ -14,6 +14,6 @@ fastapi==0.110.0
 uvicorn==0.30.0
 pillow==10.2.0
 python-multipart==0.0.9
-openai==1.30.0
+openai==1.76.2
 treys
 cachetools
