@@ -1,0 +1,56 @@
+repos:
+  -   repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v4.5.0
+      hooks:
+        - id: check-added-large-files
+          name: Check for added large files
+          entry: check-added-large-files
+        - id: check-json
+          name: Check JSON
+        - id: detect-private-key
+          name: Check for Sensitive Private keys
+        - id: check-toml
+          name: Check Toml
+          entry: check-toml
+          types: [toml]
+        - id: check-yaml
+          name: Check Yaml
+          entry: check-yaml
+          types: [yaml]
+        - id: end-of-file-fixer
+          name: Fix End of Files
+          entry: end-of-file-fixer
+          types: [text]
+          stages: [commit, push, manual]
+        - id: trailing-whitespace
+          name: Trim Trailing Whitespace
+          entry: trailing-whitespace-fixer
+          types: [text]
+          stages: [commit, push, manual]
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.4.9
+    hooks:
+      - id: ruff
+        args: [--line-length=120, --fix, --exit-non-zero-on-fix]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+    -   id: mypy
+        args:
+          - "--no-strict-optional"
+          - "--ignore-missing-imports"
+          - "--disable-error-code"
+          - "attr-defined"
+          - "--disable-error-code"
+          - "assignment"
+        additional_dependencies: [types-PyYAML, types-requests, types-python-dateutil>=2.8.19]
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.9.3
+    hooks:
+      - id: isort
+        args: ["--skip=requirements.txt", "--skip=requirements.dev.txt"]
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        args: [-l 120]
