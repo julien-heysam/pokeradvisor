@@ -54,7 +54,7 @@ class ProjectEnvs(BaseSettings):
 PROJECT_PATHS = ProjectPaths()
 PROJECT_ENVS = ProjectEnvs()
 API_KEYS = ApiKeys()
-DATABASE_URI = f"postgresql://{API_KEYS.POSTGRES_DATABASE_USERNAME}:{API_KEYS.POSTGRES_DATABASE_PASSWORD}@{API_KEYS.POSTGRES_DATABASE_URL}/{API_KEYS.POSTGRES_DATABASE_NAME}{'?sslmode=require' if PROJECT_ENVS.ENV_STATE not in [Envs.LOCAL.value, Envs.DEV.value] else ''}"
+DATABASE_URI = ""
 
 
 def get_handler():
