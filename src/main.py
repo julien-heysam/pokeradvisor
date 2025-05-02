@@ -109,17 +109,17 @@ def analyze_poker_image(
 
     num_players = num_players or poker_state["num_players"]
     # Calculate odds
-    win_prob = calculate_win_probability(
-        poker_state["player_hand"],
-        poker_state["community_cards"],
-        num_players
-    )
+    # win_prob = calculate_win_probability(
+    #     poker_state["player_hand"],
+    #     poker_state["community_cards"],
+    #     num_players
+    # )
 
     return {
         "player_hand": poker_state["player_hand"],
         "community_cards": poker_state["community_cards"],
         "num_players": num_players,
-        "win_probability_hmm": win_prob,
+        # "win_probability_hmm": win_prob,
         "win_probability_llm": poker_state["probabilitiy_win"],
         "action": poker_state["action"],
     }
