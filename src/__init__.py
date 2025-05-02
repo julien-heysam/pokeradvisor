@@ -24,41 +24,6 @@ class ApiKeys(BaseSettings):
     MIXEDBREAD_API_KEY: str = os.environ.get("MIXEDBREAD_API_KEY", FAKE_API_KEY)
     GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", FAKE_API_KEY)
 
-    PINECONE_API_KEY: str = os.environ.get("PINECONE_API_KEY", FAKE_API_KEY)
-    PINECONE_ENV: str = os.environ.get("PINECONE_ENV", None)
-    PINECONE_INDEX: str = os.environ.get("PINECONE_INDEX", None)
-    PINECONE_INDEX_URL: str = os.environ.get("PINECONE_INDEX_URL", None)
-
-    ALGOLIA_APP_ID: str = os.environ.get("ALGOLIA_APP_ID", FAKE_API_KEY)
-    ALGOLIA_SEARCH_API_KEY: str = os.environ.get("ALGOLIA_SEARCH_API_KEY", FAKE_API_KEY)
-    ALGOLIA_WRITE_API_KEY: str = os.environ.get("ALGOLIA_WRITE_API_KEY", FAKE_API_KEY)
-    ALGOLIA_INDEX: str = os.environ.get("ALGOLIA_INDEX", FAKE_API_KEY)
-
-    APIFY_API_TOKEN: str = os.environ.get("APIFY_API_TOKEN", FAKE_API_KEY)
-    BRAVE_API_KEY: str = os.environ.get("BRAVE_API_KEY", FAKE_API_KEY)
-    SERPER_API_KEY: str = os.environ.get("SERPER_API_KEY", FAKE_API_KEY)
-    GOOGLE_SERPER_API_KEY: str = os.environ.get("GOOGLE_SERPER_API_KEY", FAKE_API_KEY)
-
-    GOOGLE_API_KEY: str = os.environ.get("GOOGLE_API_KEY", FAKE_API_KEY)
-    COMET_API_KEY: str = os.environ.get("COMET_API_KEY", FAKE_API_KEY)
-    NOTION_API_KEY: str = os.environ.get("NOTION_API_KEY", FAKE_API_KEY)
-    OPENWEATHERMAP_API_KEY: str = os.environ.get("OPENWEATHERMAP_API_KEY", FAKE_API_KEY)
-    PROMPTLAYER_API_KEY: str = os.environ.get("PROMPTLAYER_API_KEY", FAKE_API_KEY)
-
-    POSTGRES_DATABASE_USERNAME: str = os.environ.get("POSTGRES_DATABASE_USERNAME", "postgres")
-    POSTGRES_DATABASE_PASSWORD: str = os.environ.get("POSTGRES_DATABASE_PASSWORD", "postgres")
-    POSTGRES_DATABASE_URL: str = os.environ.get("POSTGRES_DATABASE_URL", "127.0.0.1:5432")
-    POSTGRES_DATABASE_NAME: str = os.environ.get("POSTGRES_DATABASE_NAME", "postgres")
-
-    RECALLAI_WEBHOOK_TOKEN: str = os.environ.get("RECALLAI_WEBHOOK_TOKEN", FAKE_API_KEY)
-    RECALLAI_API_KEY: str = os.environ.get("RECALLAI_API_KEY", FAKE_API_KEY)
-    RECALLAI_TRANSCRIPTION_TOKEN: str = os.environ.get("RECALLAI_TRANSCRIPTION_TOKEN", FAKE_API_KEY)
-
-    MAILGUN_API_KEY: str = os.environ.get("MAILGUN_API_KEY", FAKE_API_KEY)
-    MAILGUN_DOMAIN: str = os.environ.get("MAILGUN_DOMAIN", None)
-
-    ABLY_API_KEY: str = os.environ.get("ABLY_API_KEY", FAKE_API_KEY)
-
 
 class ProjectPaths(BaseSettings):
     ROOT_PATH: Path = Path(__file__).parent.parent
