@@ -1,10 +1,11 @@
 import io
 import base64
+import json
 import re
 from fastapi import FastAPI, File, UploadFile
 from fastapi.params import Query
 from fastapi.responses import JSONResponse
-from flask import json
+
 from PIL import Image
 from openai import OpenAI
 from treys import Card, Evaluator, Deck
