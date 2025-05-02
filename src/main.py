@@ -2,10 +2,12 @@ import io
 import base64
 import json
 import re
+import time
+import functools
 from fastapi import FastAPI, File, UploadFile
 from fastapi.params import Query
 from fastapi.responses import JSONResponse
-
+import anthropic
 from PIL import Image
 from openai import OpenAI
 from treys import Card, Evaluator, Deck
@@ -15,9 +17,23 @@ from src import API_KEYS
 
 app = FastAPI()
 client = OpenAI(api_key=API_KEYS.OPENAI_API_KEY)
+anthropic_client = anthropic.Anthropic(api_key=API_KEYS.ANTHROPIC_API_KEY)
 conversation_manager = ConversationMemoryManager()
 
 
+def timer(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Function '{func.__name__}' executed in {execution_time:.4f} seconds")
+        return result
+    return wrapper
+
+
+@timer
 def calculate_win_probability(player_hand, community_cards, num_players, num_simulations=1000):
     """
     Monte Carlo simulation to estimate win probability.
@@ -56,6 +72,7 @@ def calculate_win_probability(player_hand, community_cards, num_players, num_sim
     return wins / num_simulations
 
 
+@timer
 def build_user_msg(img_str: str):
     prompt = """
 Based on the previous conversation for this round, and the provided picture, extract the poker state.
@@ -80,10 +97,85 @@ Based on the previous conversation for this round, and the provided picture, ext
     }
 
 
+def run_with_openai(game_id: str):
+    messages=conversation_manager.get_history(game_id)
+    response = client.chat.completions.create(
+        model="gpt-4.1-2025-04-14",
+        messages=messages
+    )
+
+    return response.choices[0].message.content
+
+
+def run_with_anthropic(game_id: str):
+    messages = conversation_manager.get_history(game_id)
+    
+    # Convert OpenAI message format to Anthropic message format
+    anthropic_messages = []
+    sys = messages[0]["content"]
+    for msg in messages:
+        if msg["role"] == "user" and isinstance(msg["content"], list):
+            # Handle multimodal messages (with images)
+            content_items = []
+            for item in msg["content"]:
+                if item.get("type") == "text":
+                    content_items.append({
+                        "type": "text", 
+                        "text": item["text"]
+                    })
+                elif item.get("type") == "image_url":
+                    # Convert image_url to Anthropic's image format
+                    image_url = item["image_url"]["url"]
+                    if image_url.startswith("data:image/"):
+                        # Extract base64 data from data URL
+                        media_type = image_url.split(';')[0].split(':')[1]
+                        base64_data = image_url.split(',')[1]
+                        content_items.append({
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": media_type,
+                                "data": base64_data
+                            }
+                        })
+            anthropic_messages.append({
+                "role": "user",
+                "content": content_items
+            })
+        elif msg["role"] == "user":
+            # Handle text-only user messages
+            anthropic_messages.append({
+                "role": "user",
+                "content": msg["content"]
+            })
+        elif msg["role"] == "assistant":
+            # Handle assistant messages
+            anthropic_messages.append({
+                "role": "assistant",
+                "content": msg["content"]
+            })
+    
+    # Make API call to Anthropic
+    start_time = time.time()
+    message = anthropic_client.messages.create(
+        model="claude-3-7-sonnet-20250219",
+        max_tokens=4000,
+        temperature=0.1,
+        system=sys,
+        messages=anthropic_messages
+    )
+    end_time = time.time()
+    print(f"Anthropic API call executed in {end_time - start_time:.4f} seconds")
+    
+    return message.content[0].text
+
+
+@timer
 def analyze_poker_image(
     file: bytes,
     game_id: str = None,
-    num_players: int = None
+    num_players: int = None,
+    llm: str = "anthropic"
 ):
     if not game_id:
         return JSONResponse({"error": "game_id is required"}, status_code=400)
@@ -93,11 +185,14 @@ def analyze_poker_image(
     conversation_manager.set_game_id(game_id, num_players)
     conversation_manager.add_message(game_id, user_msg)
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini-2025-04-14",
-        messages=conversation_manager.get_history(game_id)
-    )
-    text = response.choices[0].message.content
+    start_time = time.time()
+    if llm == "anthropic":
+        text = run_with_anthropic(game_id)
+    else:
+        text = run_with_openai(game_id)
+    end_time = time.time()
+    print(f"LLM API call executed in {end_time - start_time:.4f} seconds")
+    
     conversation_manager.add_message(game_id, {"role": "assistant", "content": text})
 
     match = re.search(r'\{.*\}', text, re.DOTALL)
@@ -109,31 +204,33 @@ def analyze_poker_image(
 
     num_players = num_players or poker_state["num_players"]
     # Calculate odds
-    # win_prob = calculate_win_probability(
-    #     poker_state["player_hand"],
-    #     poker_state["community_cards"],
-    #     num_players
-    # )
+    win_prob = calculate_win_probability(
+        poker_state["player_hand"],
+        poker_state["community_cards"],
+        num_players
+    )
 
     return {
         "player_hand": poker_state["player_hand"],
         "community_cards": poker_state["community_cards"],
         "num_players": num_players,
-        # "win_probability_hmm": win_prob,
+        "win_probability_hmm": win_prob,
         "win_probability_llm": poker_state["probabilitiy_win"],
         "action": poker_state["action"],
     }
 
 
 @app.post("/analyze")
+@timer
 def post_analyze_poker_image(
     file: UploadFile = File(...),
     game_id: str = Query(default=None),
-    num_players: int = Query(default=None)
+    num_players: int = Query(default=None),
+    llm: str = Query(default="anthropic")
 ):
     image_bytes = file.file.read()
     
-    return JSONResponse(analyze_poker_image(image_bytes, game_id, num_players))
+    return JSONResponse(analyze_poker_image(image_bytes, game_id, num_players, llm))
 
 
 if __name__ == "__main__":
@@ -146,5 +243,5 @@ if __name__ == "__main__":
     image_bytes = img_byte_arr.getvalue()
     
     # Use the bytes object in the analyze function
-    result = analyze_poker_image(image_bytes, "123", 3)
+    result = analyze_poker_image(image_bytes, "123", 3, llm="anthropic")
     print(result)
