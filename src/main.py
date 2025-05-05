@@ -235,7 +235,7 @@ def post_analyze_poker_image(
 
 if __name__ == "__main__":
     # Open image file
-    image = Image.open("/Users/julienwuthrich/Downloads/toto.png")
+    image = Image.open("/Users/julienwuthrich/Downloads/poker.png")
     
     # Convert PIL Image to bytes object
     img_byte_arr = io.BytesIO()
@@ -243,5 +243,5 @@ if __name__ == "__main__":
     image_bytes = img_byte_arr.getvalue()
     
     # Use the bytes object in the analyze function
-    result = analyze_poker_image(image_bytes, "123", 3, llm="anthropic")
+    result = analyze_poker_image(image_bytes, "123", 3, llm="openai")
     print(result)

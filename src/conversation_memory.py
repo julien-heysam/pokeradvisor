@@ -26,10 +26,10 @@ The extracted information should be presented in the following JSON structure:
 {
   "player_hand": ["<your two cards>"],
   "community_cards": ["<list of cards on the table>"],
-  "num_players": <number of players>,
-  "bets": ["<list of current bets for each player>"],
-  "probabilitiy_win": <probability of winning the round>,
-  "action": <action to take, either "raise", "call", "fold", "check", "all-in">
+  "num_players": optional <number of players>,
+  "bets": optional <list of current bets for each player>,
+  "probabilitiy_win": required <probability of winning the round>,
+  "action": required <action to take, either "raise", "call", "fold", "check", "all-in">
 }
 ```
 
